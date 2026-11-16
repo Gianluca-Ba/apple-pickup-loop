@@ -11,8 +11,29 @@ test('native Wallet proof requires one decline and final failure from the same A
  for(const records of [[],[decline],[finish],[decline,finish,finish],[decline,{...finish,processID:124}],[{...decline,senderImagePath:'/tmp/other'},finish],[decline,{...finish,processImagePath:'/tmp/other'}],[decline,{...finish,eventMessage:'Success UI completed.'}],[decline,finish,{...finish,eventMessage:'Success UI completed.'}],[{...decline,timestamp:'2026-11-10 19:19:20+0900'},finish],[decline,{...finish,timestamp:'2026-11-10 19:20:50+0900'}]])assert.equal(parseNativeWalletFailure(records,context),null);
  for(const patch of [{openedAt:undefined},{openedAt:pressedAt-1},{pressedAt:now-900001},{now:pressedAt-1}])assert.equal(parseNativeWalletFailure([decline,finish],{...context,...patch}),null);
 });
-test('the log reader returns only a filtered terminal proof and treats missing, malformed or unavailable logs as uncertain',async()=>{
+function setTestTimeZone(t, timeZone) {
+ const previousTimeZone = process.env.TZ;
+ process.env.TZ = timeZone;
+ t.after(() => {
+  if (previousTimeZone === undefined) delete process.env.TZ;
+  else process.env.TZ = previousTimeZone;
+ });
+}
+
+test('the log reader returns only a filtered terminal proof and treats missing, malformed or unavailable logs as uncertain',async t=>{
+ setTestTimeZone(t, 'Asia/Tokyo');
  const calls=[],run=async(...args)=>{calls.push(args);return{stdout:JSON.stringify([decline,finish])};};
  const value=await readNativeWalletFailure(context,{run});assert.equal(value.source,'native-wallet-completed-failure');assert.deepEqual(Object.keys(value).sort(),['failedAt','source']);assert.equal(calls[0][0],'/usr/bin/log');assert.ok(calls[0][2].timeout<=8000);
  for(const run of [async()=>{throw Error('private diagnostics');},async()=>({stdout:'not json'}),async()=>({stdout:'[]'})])assert.equal(await readNativeWalletFailure(context,{run}),null);
+});
+
+test('the log reader leaves the result uncertain outside its supported time zone', async t => {
+ setTestTimeZone(t, 'UTC');
+ let logReads = 0;
+ const run = async () => {
+  logReads++;
+  return {stdout: JSON.stringify([decline, finish])};
+ };
+ assert.equal(await readNativeWalletFailure(context, {run}), null);
+ assert.equal(logReads, 0);
 });
