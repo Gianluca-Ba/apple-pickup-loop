@@ -1,0 +1,28 @@
+# Local configuration and payment/stock state
+/data/
+.env
+.env.*
+*.local
+*.lock
+*.log
+*.pem
+*.key
+*.p12
+*.mobileconfig
+*.sqlite*
+*.ovpn
+*.conf.local
+/backups/
+/.cache/
+/fleet-mac-ledger.json
+/monitor-fleet.json
+/stock-monitor-state.json
+/app/.stock-guest-profile/
+
+# Dependencies and generated code
+/node_modules/
+/app/native/safari
+/app/native/safari.new
+__pycache__/
+*.pyc
+.DS_Store

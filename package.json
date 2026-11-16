@@ -1,0 +1,22 @@
+{
+  "name": "apple-pickup-loop",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node app/server.mjs",
+    "prestart": "node app/build-native.mjs",
+    "ui": "node dashboard-server.mjs",
+    "preui": "node app/build-native.mjs",
+    "test": "CHECKOUT_DISABLE_NATIVE=1 node --test app/*.test.mjs && python3 app/linux-vpn-control.test.py && python3 app/mixed-vpn-control.test.py",
+    "check": "node --check app/server.mjs && node --check app/controller.mjs && node --check app/fleet.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.58.0"
+  },
+  "description": "Local Apple Japan pickup monitor and Safari checkout coordinator",
+  "author": "GB",
+  "engines": {
+    "node": ">=22"
+  }
+}

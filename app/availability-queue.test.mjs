@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {AvailabilityQueue} from './availability-queue.mjs';
+const a={sku:'AAAA1J/A',storeId:'R119'},b={sku:'BBBB2J/A',storeId:'R119'};
+function fixture(){let time=10000;const q=new AvailabilityQueue({now:()=>time});return{q,push:v=>q.push({observedAt:time,receivedAt:time,...v}),advance:n=>time+=n};}
+test('both colours and multiple Stores survive while only the selected candidate is consumed',()=>{const{q,push,advance}=fixture();push(a);advance(1);push(b);push({...b,storeId:'R224'});assert.equal(q.size,3);assert.equal(q.take().sku,a.sku);assert.equal(q.take().sku,b.sku);assert.equal(q.take().storeId,'R224');});
+test('duplicate signals preserve first receipt for queue timing but require a genuine fresh confirmation',()=>{const{q,push,advance}=fixture();push(a);advance(4000);push(a);assert.equal(q.size,1);assert.equal(q.peek().firstReceivedAt,10000);assert.equal(q.peek().observedAt,14000);advance(5001);assert.equal(q.take(),null);});
+test('stale, future and malformed candidates never reach checkout and the queue is bounded',()=>{const{q,push}=fixture();push({...a,observedAt:0});push({...a,observedAt:11000});push({...a,sku:'private-value'});assert.equal(q.size,0);for(let i=0;i<20;i++)push({...a,storeId:'R'+String(i).padStart(3,'0')});assert.equal(q.size,12);});
+test('a withdrawal only removes the matching colour and Store',()=>{const{q,push}=fixture();push(a);push(b);q.prune(v=>!(v.sku===a.sku&&v.storeId===a.storeId));assert.equal(q.size,1);assert.equal(q.take().sku,b.sku);});
+test('a delayed old reply cannot replace a newer observation',()=>{const{q,push,advance}=fixture();push(a);advance(1000);push({...a,observedAt:9000});assert.equal(q.peek().observedAt,10000);});

@@ -1,0 +1,16 @@
+#cloud-config
+# Author: GB
+hostname: apple-pickup-linux
+preserve_hostname: false
+package_update: true
+packages:
+  - ca-certificates
+  - curl
+  - python3
+  - xz-utils
+write_files:
+  - path: /etc/apple-pickup-loop-vm
+    owner: root:root
+    permissions: '0644'
+    content: |
+      apple-pickup-loop-v1

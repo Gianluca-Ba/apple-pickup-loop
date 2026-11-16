@@ -1,0 +1,7 @@
+# Author: GB
+abi <abi/4.0>,
+include <tunables/global>
+
+/opt/iphone-stock-browsers/chromium-*/chrome-linux*/chrome flags=(unconfined) {
+  userns,
+}

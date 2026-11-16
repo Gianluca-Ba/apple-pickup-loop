@@ -1,0 +1,20 @@
+# Author: GB
+[Unit]
+Description=Apple Pickup Loop Linux stock worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+Environment=APPLE_LOOP_BROWSER_RUNTIME=local
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/iphone-stock-browsers
+WorkingDirectory=/opt/iphone-stock
+ExecStart=/usr/local/bin/node /opt/iphone-stock/app/worker-server.mjs
+Restart=on-failure
+RestartSec=3
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
